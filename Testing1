@@ -1,0 +1,83 @@
+import openai
+from flask import Flask, request, jsonify
+import requests
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# OpenAI API Key (replace with your actual key)
+openai.api_key = "your_openai_api_key"
+
+# Function to interact with OpenAI GPT
+def query_openai(prompt):
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",  # Use the engine of your choice
+            prompt=prompt,
+            max_tokens=1500,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+        return response['choices'][0]['text'].strip()
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Security best practices endpoint
+@app.route('/security_tips', methods=['POST'])
+def security_tips():
+    data = request.json
+    topic = data.get("topic", "general security")
+    prompt = f"Provide ethical security best practices about {topic}. Focus on prevention and mitigation."
+    response = query_openai(prompt)
+    return jsonify({"response": response})
+
+# Tool explanation endpoint
+@app.route('/tool_explanation', methods=['POST'])
+def tool_explanation():
+    data = request.json
+    tool_name = data.get("tool", "Metasploit")
+    prompt = f"Explain how {tool_name} is used for ethical hacking. Provide examples of legal usage and security mitigation."
+    response = query_openai(prompt)
+    return jsonify({"response": response})
+
+# Vulnerability scanning guidance endpoint
+@app.route('/vulnerability_scanning', methods=['POST'])
+def vulnerability_scanning():
+    data = request.json
+    system = data.get("system", "web application")
+    prompt = f"How can I ethically scan a {system} for vulnerabilities? List tools and techniques that comply with legal and ethical standards."
+    response = query_openai(prompt)
+    return jsonify({"response": response})
+
+# Code analysis endpoint
+@app.route('/code_analysis', methods=['POST'])
+def code_analysis():
+    data = request.json
+    code = data.get("code", "")
+    if not code:
+        return jsonify({"error": "No code provided"}), 400
+    prompt = f"Analyze the following code for security vulnerabilities and suggest improvements:\n{code}"
+    response = query_openai(prompt)
+    return jsonify({"response": response})
+
+# Run the app
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+Requirements.txt
+pip install openai flask requests
+
+
+
+
+
+
+Uncensored bot:
+
+git clone https://github.com/sigma-cyber-ghost/BlackGPT_Pro.git
+cd BlackGPT_Pro
+pip install requests rich pyfiglet
+python blackgpt_pro.py
+
