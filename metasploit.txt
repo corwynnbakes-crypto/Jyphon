@@ -1,0 +1,7 @@
+pkg update && pkg upgrade
+pkg install postgresql
+pkg install openssh wget curl git -y
+Wget https://raw.githubusercontent.com/gushmazuko/metasploit_in_termux/master/metasploit.sh
+Chmod +x metasploit.sh
+./metasploit sh
+Msfconsole
