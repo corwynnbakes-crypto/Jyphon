@@ -1,0 +1,72 @@
+browser in browser...
+
+docker run -d \
+  --name=firefox-sandbox \
+  --security-opt seccomp=unconfined \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e TZ=Africa/Johannesburg \
+  -p 3000:3000 \
+  -p 3001:3001 \
+  --shm-size="1gb" \
+  --restart unless-stopped \
+  lscr.io/linuxserver/firefox:latest
+
+
+
+
+
+kali in browser...
+
+docker run -d \
+  --name=kali-linux \
+  --security-opt seccomp=unconfined \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e TZ=Africa/Johannesburg \
+  -e SUBFOLDER=/ \
+  -e TITLE="Kali Linux" \
+  -p 3011:3000 \
+  -p 3009:3001 \
+  --device /dev/dri:/dev/dri \
+  --shm-size="1gb" \
+  --restart unless-stopped \
+  lscr.io/linuxserver/kali-linux:latest
+
+
+
+docker wordpress...
+
+version: "3"
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: store_db
+      MYSQL_ROOT_PASSWORD: your_secure_password
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      lab_net:
+        ipv4_address: 10.56.1.20
+
+  flask_app:
+    image: your-flask-image:latest
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: your_secure_password
+    networks:
+      lab_net:
+        ipv4_address: 10.56.1.21
+
+networks:
+  lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.56.1.0/24
